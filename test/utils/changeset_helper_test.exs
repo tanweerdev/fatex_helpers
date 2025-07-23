@@ -37,10 +37,12 @@ defmodule Fatex.ChangesetHelperTest do
 
     test "allows custom error messages", %{schema: schema} do
       changeset = cast(schema, %{email: "test@example.com", phone: "123456"}, [:email, :phone])
-      result = Helper.validate_exclusive_fields(changeset, [:email, :phone],
-        error_message: "Use either email or phone",
-        required_message: "Contact info required"
-      )
+
+      result =
+        Helper.validate_exclusive_fields(changeset, [:email, :phone],
+          error_message: "Use either email or phone",
+          required_message: "Contact info required"
+        )
 
       assert result.errors[:email] == {"Use either email or phone", []}
     end
@@ -112,9 +114,11 @@ defmodule Fatex.ChangesetHelperTest do
     test "accepts custom error message" do
       schema = %Fatex.FatDoctor{}
       changeset = cast(schema, %{}, [:email, :phone])
-      result = Helper.validate_any_field_present(changeset, [:email, :phone],
-        message: "Please provide contact information"
-      )
+
+      result =
+        Helper.validate_any_field_present(changeset, [:email, :phone],
+          message: "Please provide contact information"
+        )
 
       assert result.errors[:email] == {"Please provide contact information", []}
     end
@@ -140,11 +144,13 @@ defmodule Fatex.ChangesetHelperTest do
     test "accepts custom error message" do
       schema = %Fatex.FatDoctor{}
       changeset = cast(schema, %{email: "test@example.com"}, [:email, :phone])
-      result = Helper.require_field_if_present(changeset,
-        if_present: :email,
-        require: :phone,
-        message: "Phone required when email is provided"
-      )
+
+      result =
+        Helper.require_field_if_present(changeset,
+          if_present: :email,
+          require: :phone,
+          message: "Phone required when email is provided"
+        )
 
       assert result.errors[:phone] == {"Phone required when email is provided", [validation: :required]}
     end
@@ -154,15 +160,25 @@ defmodule Fatex.ChangesetHelperTest do
     test "validates start before end for datetimes" do
       schema = %Fatex.FatDoctor{}
 
-      valid_changeset = cast(schema, %{
-        start_time: ~U[2020-01-01 10:00:00Z],
-        end_time: ~U[2020-01-01 11:00:00Z]
-      }, [:start_time, :end_time])
+      valid_changeset =
+        cast(
+          schema,
+          %{
+            start_time: ~U[2020-01-01 10:00:00Z],
+            end_time: ~U[2020-01-01 11:00:00Z]
+          },
+          [:start_time, :end_time]
+        )
 
-      invalid_changeset = cast(schema, %{
-        start_time: ~U[2020-01-01 12:00:00Z],
-        end_time: ~U[2020-01-01 11:00:00Z]
-      }, [:start_time, :end_time])
+      invalid_changeset =
+        cast(
+          schema,
+          %{
+            start_time: ~U[2020-01-01 12:00:00Z],
+            end_time: ~U[2020-01-01 11:00:00Z]
+          },
+          [:start_time, :end_time]
+        )
 
       assert Helper.validate_start_before_end(valid_changeset, :start_time, :end_time).valid?
       refute Helper.validate_start_before_end(invalid_changeset, :start_time, :end_time).valid?
@@ -171,10 +187,15 @@ defmodule Fatex.ChangesetHelperTest do
     test "validates start before or equal to end" do
       schema = %Fatex.FatDoctor{}
 
-      equal_changeset = cast(schema, %{
-        start_time: ~U[2020-01-01 10:00:00Z],
-        end_time: ~U[2020-01-01 10:00:00Z]
-      }, [:start_time, :end_time])
+      equal_changeset =
+        cast(
+          schema,
+          %{
+            start_time: ~U[2020-01-01 10:00:00Z],
+            end_time: ~U[2020-01-01 10:00:00Z]
+          },
+          [:start_time, :end_time]
+        )
 
       assert Helper.validate_start_before_or_equal_end(equal_changeset, :start_time, :end_time).valid?
     end
@@ -182,14 +203,20 @@ defmodule Fatex.ChangesetHelperTest do
     test "accepts custom error message" do
       schema = %Fatex.FatDoctor{}
 
-      changeset = cast(schema, %{
-        start_time: ~U[2020-01-01 12:00:00Z],
-        end_time: ~U[2020-01-01 11:00:00Z]
-      }, [:start_time, :end_time])
+      changeset =
+        cast(
+          schema,
+          %{
+            start_time: ~U[2020-01-01 12:00:00Z],
+            end_time: ~U[2020-01-01 11:00:00Z]
+          },
+          [:start_time, :end_time]
+        )
 
-      result = Helper.validate_start_before_end(changeset, :start_time, :end_time,
-        message: "must finish after it starts"
-      )
+      result =
+        Helper.validate_start_before_end(changeset, :start_time, :end_time,
+          message: "must finish after it starts"
+        )
 
       assert result.errors[:start_time] == {"must finish after it starts", []}
     end

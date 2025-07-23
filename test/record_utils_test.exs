@@ -69,11 +69,12 @@ defmodule Fatex.FatDataSanitizerTest do
         }
       }
 
-      result = TestSanitizer.sanitize(data,
-        mask: [password: "****"],
-        remove: [:private],
-        deep: true
-      )
+      result =
+        TestSanitizer.sanitize(data,
+          mask: [password: "****"],
+          remove: [:private],
+          deep: true
+        )
 
       assert result == %{
                user: %{
@@ -92,15 +93,17 @@ defmodule Fatex.FatDataSanitizerTest do
         }
       }
 
-      result = TestSanitizer.sanitize(data,
-        mask: [password: "****"],
-        deep: false
-      )
+      result =
+        TestSanitizer.sanitize(data,
+          mask: [password: "****"],
+          deep: false
+        )
 
       assert result == %{
                user: %{
                  name: "John",
-                 password: "secret"  # Not masked because deep is false
+                 # Not masked because deep is false
+                 password: "secret"
                }
              }
     end

@@ -85,10 +85,11 @@ defmodule Fatex.FatContextTest do
       room2 = insert(:room, name: "B", is_active: true)
       room3 = insert(:room, name: "C", is_active: true)
 
-      results = TestContext.list(FatRoom,
-        where: [is_active: true],
-        order_by: [desc: :name]
-      )
+      results =
+        TestContext.list(FatRoom,
+          where: [is_active: true],
+          order_by: [desc: :name]
+        )
 
       assert [%{name: "C"}, %{name: "B"}] = results
     end
@@ -196,6 +197,7 @@ defmodule Fatex.FatContextTest do
 
     test "updates existing record when found" do
       room = insert(:room, name: "Test")
+
       assert {:ok, %{name: "Updated"}} =
                TestContext.upsert(FatRoom, [name: "Test"], %{name: "Updated"}, %{name: "New"})
     end

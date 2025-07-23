@@ -30,7 +30,7 @@ defmodule Fatex.FatContext do
       def repo, do: @repo
 
       # Runtime verification of repo
-      @after_compile Fatex.FatContext
+      # @after_compile Fatex.FatContext
 
       import Ecto.Query, warn: false
 
@@ -352,6 +352,7 @@ defmodule Fatex.FatContext do
               has_field?(query, :inserted_at) -> order_by(query, [q], asc: q.inserted_at)
               true -> query
             end
+
           field ->
             order_by(query, [q], asc: field(q, ^field))
         end
@@ -365,6 +366,7 @@ defmodule Fatex.FatContext do
               has_field?(query, :inserted_at) -> order_by(query, [q], desc: q.inserted_at)
               true -> query
             end
+
           field ->
             order_by(query, [q], desc: field(q, ^field))
         end
@@ -387,17 +389,17 @@ defmodule Fatex.FatContext do
     end
   end
 
-  @doc """
-  Runtime verification of the repository module.
-  """
-  def __after_compile__(%{module: module}, _bytecode) do
-    repo = module.repo()
+  # @doc """
+  # Runtime verification of the repository module.
+  # """
+  # def __after_compile__(%{module: module}, _bytecode) do
+  #   repo = module.repo()
 
-    unless Code.ensure_loaded?(repo) and function_exported?(repo, :__adapter__, 0) do
-      raise ArgumentError, """
-      The provided :repo option is not a valid Ecto.Repo.
-      Expected a module that implements Ecto.Repo behaviour, got: #{inspect(repo)}
-      """
-    end
-  end
+  #   unless Code.ensure_loaded?(repo) and function_exported?(repo, :__adapter__, 0) do
+  #     raise ArgumentError, """
+  #     The provided :repo option is not a valid Ecto.Repo.
+  #     Expected a module that implements Ecto.Repo behaviour, got: #{inspect(repo)}
+  #     """
+  #   end
+  # end
 end
