@@ -383,7 +383,7 @@ defmodule Fatex.FatContext do
       defp maybe_preload(record, preloads), do: repo().preload(record, preloads)
 
       defp has_field?(query, field) do
-        schema = query.from.source |> elem(1)
+        schema = elem(query.from.source, 1)
         Enum.member?(schema.__schema__(:fields), field)
       end
     end

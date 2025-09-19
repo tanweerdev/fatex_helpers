@@ -66,6 +66,7 @@ defmodule Fatex.FatDataSanitizer do
       def sanitize(%_{} = record, opts) do
         record
         |> Map.from_struct()
+        |> Map.drop([:__meta__, :__struct__])
         |> sanitize_record(opts)
       end
 
@@ -88,7 +89,12 @@ defmodule Fatex.FatDataSanitizer do
         |> maybe_deep_sanitize(opts)
       end
 
-      defp prepare_record(%_{} = record), do: Map.from_struct(record)
+      defp prepare_record(%_{} = record) do
+        record
+        |> Map.from_struct()
+        |> Map.drop([:__meta__, :__struct__])
+      end
+
       defp prepare_record(record), do: record
 
       @doc """
@@ -102,7 +108,7 @@ defmodule Fatex.FatDataSanitizer do
             %{key => sanitize(value, opts)}
 
           _size ->
-            case Application.get_env(:fatex_helpers, :json_library, Jason) do
+            case Application.get_env(:fatex_helpers, :json_library) do
               nil ->
                 raise "Please configure :json_library in :fatex_helpers application environment"
 

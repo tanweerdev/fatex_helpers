@@ -16,11 +16,11 @@ defmodule Fatex.StringHelper do
   - `length`: The length of the random string (default: 8).
 
   ## Examples
-      iex> Fatex.StringHelper.random()
-      "aB3dEfG1"
+      iex> Fatex.StringHelper.random() |> String.length()
+      8
 
-      iex> Fatex.StringHelper.random(12)
-      "xYz1aB2cD3eF"
+      iex> Fatex.StringHelper.random(12) |> String.length()
+      12
   """
   @spec random(non_neg_integer()) :: binary()
   def random(length \\ @default_length) do
@@ -38,11 +38,12 @@ defmodule Fatex.StringHelper do
   - `char_set`: A list of characters to use for generating the string (default: A-Z).
 
   ## Examples
-      iex> Fatex.StringHelper.random_of(10)
-      "ABCDEFGHIJ"
+      iex> Fatex.StringHelper.random_of(10) |> String.length()
+      10
 
-      iex> Fatex.StringHelper.random_of(5, ["a", "b", "c"])
-      "abcba"
+      iex> result = Fatex.StringHelper.random_of(5, ["a", "b", "c"])
+      iex> String.length(result) <= 5 and String.match?(result, ~r/^[abc]*$/)
+      true
   """
   @spec random_of(non_neg_integer(), list(String.t())) :: binary()
   def random_of(length, char_set \\ @default_chars) do

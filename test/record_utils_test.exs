@@ -117,7 +117,7 @@ defmodule Fatex.FatDataSanitizerTest do
       Application.put_env(:fatex_helpers, :json_library, Jason)
 
       tuple = {:complex, "data", 123, %{nested: true}}
-      assert "[\"complex\",\"data\",123,{\"nested\":true}]" == TestSanitizer.sanitize(tuple)
+      assert ~s(["complex","data",123,{"nested":true}]) == TestSanitizer.sanitize(tuple)
 
       # Clean up
       Application.delete_env(:fatex_helpers, :json_library)

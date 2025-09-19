@@ -57,7 +57,7 @@ defmodule Fatex.ChangesetHelper do
       present_fields > 1 ->
         add_mutual_exclusion_errors(changeset, fields, error_msg)
 
-      present_fields == 0 and not all_fields_empty?(changeset, fields, allow_nil?) ->
+      present_fields == 0 ->
         add_requirement_errors(changeset, fields, required_msg)
 
       true ->
@@ -163,7 +163,7 @@ defmodule Fatex.ChangesetHelper do
     error_field = Keyword.get(opts, :field, start_field)
 
     if start_value && end_value && !before?(start_value, end_value, compare_type) do
-      add_echangeset_rror(changeset, error_field, message)
+      add_changeset_error(changeset, error_field, message)
     else
       changeset
     end
@@ -192,7 +192,7 @@ defmodule Fatex.ChangesetHelper do
     error_field = Keyword.get(opts, :field, start_field)
 
     if start_value && end_value && !before_or_equal?(start_value, end_value, compare_type) do
-      add_echangeset_rror(changeset, error_field, message)
+      add_changeset_error(changeset, error_field, message)
     else
       changeset
     end
@@ -203,41 +203,37 @@ defmodule Fatex.ChangesetHelper do
 
   ## Examples
 
-      add_echangeset_rror(changeset, :email, "invalid format")
+      add_changeset_error(changeset, :email, "invalid format")
   """
-  @spec add_echangeset_rror(Ecto.Changeset.t(), atom(), String.t()) :: Ecto.Changeset.t()
-  def add_echangeset_rror(changeset, field, message) do
-    add_echangeset_rror(changeset, field, message)
+  @spec add_changeset_error(Ecto.Changeset.t(), atom(), String.t()) :: Ecto.Changeset.t()
+  def add_changeset_error(changeset, field, message) do
+    Ecto.Changeset.add_error(changeset, field, message)
   end
 
   # Private helper functions
 
   defp field_present?(changeset, field, allow_nil?) do
     value = get_field(changeset, field)
-    not is_nil(value) || (allow_nil? && Map.has_key?(changeset.changes, field))
-  end
 
-  defp all_fields_empty?(changeset, fields, allow_nil?) do
-    Enum.all?(fields, fn field ->
-      value = get_field(changeset, field)
-      is_nil(value) && (!allow_nil? || !Map.has_key?(changeset.changes, field))
-    end)
+    cond do
+      not is_nil(value) -> true
+      allow_nil? -> Map.has_key?(changeset.changes, field)
+      true -> false
+    end
   end
 
   defp add_mutual_exclusion_errors(changeset, fields, message) do
-    Enum.reduce(fields, changeset, &add_echangeset_rror(&2, &1, message))
+    Enum.reduce(fields, changeset, &add_changeset_error(&2, &1, message))
   end
 
   defp add_requirement_errors(changeset, fields, message) do
     Enum.reduce(fields, changeset, fn field, cs ->
-      add_echangeset_rror(cs, field, message)
+      add_changeset_error(cs, field, message)
     end)
   end
 
   defp humanize_fields(fields) do
-    fields
-    |> Enum.map(&Atom.to_string/1)
-    |> Enum.join(", ")
+    Enum.map_join(fields, ", ", &Atom.to_string/1)
   end
 
   defp before?(start_date, end_date, :time), do: Time.diff(start_date, end_date) < 0

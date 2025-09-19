@@ -16,12 +16,14 @@ defmodule Fatex.FatRoom do
 
   # TODO: check do we really use changeset in fatex_helpers
   def changeset(struct, params \\ %{}) do
-    cast(struct, params, [
+    struct
+    |> cast(params, [
       :name,
       :purpose,
       :description,
       :floor,
       :is_active
     ])
+    |> validate_required([:name])
   end
 end
