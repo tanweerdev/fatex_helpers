@@ -159,6 +159,7 @@ defmodule Fatex.FatContextTest do
 
     test "updates existing record when found" do
       _room = insert(:room, name: "Existing")
+
       assert {:ok, %{name: "Updated"}} =
                TestContext.upsert(FatRoom, [name: "Existing"], %{name: "Updated"}, %{name: "New"})
     end

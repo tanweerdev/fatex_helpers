@@ -48,16 +48,17 @@ defmodule Fatex.ChangesetHelper do
     required_msg = opts[:required_message] || "At least one of #{humanize_fields(fields)} is required"
     allow_nil? = Keyword.get(opts, :allow_nil, false)
 
-    present_fields =
-      fields
-      |> Enum.filter(&field_present?(changeset, &1, allow_nil?))
-      |> length()
+    present_fields_list = Enum.filter(fields, &field_present?(changeset, &1, allow_nil?))
+    present_fields_count = length(present_fields_list)
+
+    # IO.inspect("present_fields_list:: #{inspect(present_fields_list)}")
+    # IO.inspect("present_fields_count:: #{inspect(present_fields_count)}")
 
     cond do
-      present_fields > 1 ->
+      present_fields_count > 1 ->
         add_mutual_exclusion_errors(changeset, fields, error_msg)
 
-      present_fields == 0 ->
+      present_fields_count == 0 ->
         add_requirement_errors(changeset, fields, required_msg)
 
       true ->
@@ -213,12 +214,24 @@ defmodule Fatex.ChangesetHelper do
   # Private helper functions
 
   defp field_present?(changeset, field, allow_nil?) do
-    value = get_field(changeset, field)
+    # Check if field is in changes (was explicitly set in this changeset operation)
+    field_in_changes = Map.has_key?(changeset.changes, field)
+    field_value = get_field(changeset, field)
 
-    cond do
-      not is_nil(value) -> true
-      allow_nil? -> Map.has_key?(changeset.changes, field)
-      true -> false
+    # IO.inspect("field_present? debug - field: #{field}, in_changes: #{field_in_changes}, value: #{inspect(field_value)}, allow_nil?: #{allow_nil?}")
+
+    if field_in_changes do
+      # Field was explicitly changed in this changeset
+      if allow_nil? do
+        # When allow_nil is true, any explicit change counts as present
+        true
+      else
+        # When allow_nil is false, only non-nil changes count as present
+        not is_nil(Map.get(changeset.changes, field))
+      end
+    else
+      # Field was not changed, so it's not considered present for validation
+      false
     end
   end
 
