@@ -12,12 +12,14 @@ defmodule Fatex.FatContextTest do
     :ok
   end
 
+  @spec insert_rooms(map()) :: map()
   def insert_rooms(_context) do
     room1 = insert(:room, name: "First")
     room2 = insert(:room, name: "Second")
     %{room1: room1, room2: room2}
   end
 
+  @spec insert_rooms_with_beds(map()) :: map()
   def insert_rooms_with_beds(_context) do
     room = insert(:room, name: "Room with beds")
     bed1 = insert(:bed, fat_room: room, name: "Bed 1")
@@ -159,6 +161,7 @@ defmodule Fatex.FatContextTest do
 
     test "updates existing record when found" do
       _room = insert(:room, name: "Existing")
+
       assert {:ok, %{name: "Updated"}} =
                TestContext.upsert(FatRoom, [name: "Existing"], %{name: "Updated"}, %{name: "New"})
     end

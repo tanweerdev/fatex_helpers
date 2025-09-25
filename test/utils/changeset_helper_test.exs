@@ -47,16 +47,29 @@ defmodule Fatex.ChangesetHelperTest do
       assert result.errors[:email] == {"Use either email or phone", []}
     end
 
-    test "handles nil values according to options" do
-      schema = %Fatex.FatDoctor{email: "old@example.com", phone: nil}
+    test "handles treat_values_absent option" do
+      # Test treat_values_absent - empty strings treated as absent
+      changeset = cast(%Fatex.FatDoctor{}, %{email: "test@example.com", phone: ""}, [:email, :phone])
+      result = Helper.validate_exclusive_fields(changeset, [:email, :phone], treat_values_absent: [""])
+      # Should pass because phone is treated as absent
+      assert result.valid?
 
-      # With allow_nil: false (default)
-      changeset = cast(schema, %{email: nil}, [:email, :phone])
-      result = Helper.validate_exclusive_fields(changeset, [:email, :phone])
-      refute result.valid?
+      # Test treat_values_absent with "0" string
+      changeset2 = cast(%Fatex.FatDoctor{}, %{email: "valid@email.com", phone: "0"}, [:email, :phone])
+      result = Helper.validate_exclusive_fields(changeset2, [:email, :phone], treat_values_absent: ["0"])
+      # Should pass because only email is present, phone ("0") is absent
+      assert result.valid?
 
-      # With allow_nil: true
-      result = Helper.validate_exclusive_fields(changeset, [:email, :phone], allow_nil: true)
+      # Test both options together with different values
+      changeset3 = cast(%Fatex.FatDoctor{}, %{email: "PRESENT", phone: "0"}, [:email, :phone])
+
+      result =
+        Helper.validate_exclusive_fields(changeset3, [:email, :phone],
+          treat_values_present: ["PRESENT"],
+          treat_values_absent: ["0"]
+        )
+
+      # Should pass because email ("PRESENT") is treated as present, phone ("0") is absent
       assert result.valid?
     end
   end
@@ -84,16 +97,29 @@ defmodule Fatex.ChangesetHelperTest do
       assert result.errors[:email] == {"Exactly one of email, phone is required", []}
     end
 
-    test "handles nil values according to options" do
-      schema = %Fatex.FatDoctor{email: "old@example.com", phone: nil}
+    test "handles treat_values_absent option" do
+      # Test treat_values_absent with empty strings
+      changeset = cast(%Fatex.FatDoctor{}, %{email: "test@example.com", phone: ""}, [:email, :phone])
+      result = Helper.validate_exactly_one_field(changeset, [:email, :phone], treat_values_absent: [""])
+      # Should pass because only email is present (phone treated as absent)
+      assert result.valid?
 
-      # With allow_nil: false (default) - setting email to nil should be invalid
-      changeset = cast(schema, %{email: nil}, [:email, :phone])
-      result = Helper.validate_exactly_one_field(changeset, [:email, :phone])
-      refute result.valid?
+      # Test treat_values_absent with "0" string
+      changeset2 = cast(%Fatex.FatDoctor{}, %{email: "valid@email.com", phone: "0"}, [:email, :phone])
+      result = Helper.validate_exactly_one_field(changeset2, [:email, :phone], treat_values_absent: ["0"])
+      # Should pass because only email is present, phone ("0") is absent
+      assert result.valid?
 
-      # With allow_nil: true - setting email to nil should be valid (one field explicitly set)
-      result = Helper.validate_exactly_one_field(changeset, [:email, :phone], allow_nil: true)
+      # Test both options together with different values
+      changeset3 = cast(%Fatex.FatDoctor{}, %{email: "PRESENT", phone: "0"}, [:email, :phone])
+
+      result =
+        Helper.validate_exactly_one_field(changeset3, [:email, :phone],
+          treat_values_present: ["PRESENT"],
+          treat_values_absent: ["0"]
+        )
+
+      # Should pass because email ("PRESENT") is treated as present, phone ("0") is absent
       assert result.valid?
     end
   end
