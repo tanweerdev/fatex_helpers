@@ -153,17 +153,53 @@ defmodule Fatex.FatContextTest do
     end
   end
 
-  describe "upsert/5" do
+  describe "find_or_create/2" do
     test "creates new record when not found" do
+      unique_name = "NonExistent_#{System.unique_integer([:positive])}"
+
+      assert {:ok, %{name: ^unique_name}} =
+               TestContext.find_or_create(FatRoom,
+                 get_by_clauses: [name: unique_name],
+                 create_params: %{name: unique_name}
+               )
+    end
+
+    test "returns existing record when found" do
+      unique_name = "ExistingForFind_#{System.unique_integer([:positive])}"
+      room = insert(:room, name: unique_name)
+
+      assert {:ok, %{id: id, name: ^unique_name}} =
+               TestContext.find_or_create(FatRoom,
+                 get_by_clauses: [name: unique_name],
+                 create_params: %{name: "ShouldNotCreate"}
+               )
+
+      assert id == room.id
+    end
+  end
+
+  describe "upsert/2" do
+    test "creates new record when not found" do
+      unique_name = "NonExistent_#{System.unique_integer([:positive])}"
+
       assert {:ok, %{name: "New"}} =
-               TestContext.upsert(FatRoom, [name: "NonExistent"], %{name: "Updated"}, %{name: "New"})
+               TestContext.upsert(FatRoom,
+                 get_by_clauses: [name: unique_name],
+                 update_params: %{name: "Updated"},
+                 create_params: %{name: "New"}
+               )
     end
 
     test "updates existing record when found" do
-      _room = insert(:room, name: "Existing")
+      unique_name = "ExistingForUpsert_#{System.unique_integer([:positive])}"
+      _room = insert(:room, name: unique_name)
 
       assert {:ok, %{name: "Updated"}} =
-               TestContext.upsert(FatRoom, [name: "Existing"], %{name: "Updated"}, %{name: "New"})
+               TestContext.upsert(FatRoom,
+                 get_by_clauses: [name: unique_name],
+                 update_params: %{name: "Updated"},
+                 create_params: %{name: "New"}
+               )
     end
   end
 end
