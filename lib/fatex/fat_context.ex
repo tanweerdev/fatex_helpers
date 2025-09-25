@@ -27,6 +27,16 @@ defmodule Fatex.FatContext do
   defmacro __using__(opts) do
     quote location: :keep, bind_quoted: [opts: opts] do
       @repo opts[:repo] || raise(":repo option is required when using Fatex.FatContext")
+
+      @doc """
+      Returns the configured Ecto repository for this context.
+
+      ## Examples
+
+          repo()
+          #=> MyApp.Repo
+      """
+      @spec repo() :: module()
       def repo, do: @repo
 
       # Runtime verification of repo

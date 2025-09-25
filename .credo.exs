@@ -86,16 +86,29 @@
         {Credo.Check.Warning.UnusedStringOperation},
         {Credo.Check.Warning.UnusedTupleOperation},
         {Credo.Check.Warning.RaiseInsideRescue},
-        # TODO: need to be enable in code improvement part
-        {Credo.Check.Warning.SpecWithStruct, false},
+        # Enable SpecWithStruct for better type safety
+        {Credo.Check.Warning.SpecWithStruct},
         {Credo.Check.Warning.MissedMetadataKeyInLoggerConfig},
-        # Controversial and experimental checks (opt-in, just remove `, false`)
-        {Credo.Check.Refactor.ABCSize, false},
-        {Credo.Check.Refactor.AppendSingleItem, false},
-        {Credo.Check.Refactor.VariableRebinding, false},
+
+        # Enable sensible refactoring checks
+        {Credo.Check.Refactor.AppendSingleItem},
         {Credo.Check.Warning.MapGetUnsafePass},
-        {Credo.Check.Consistency.MultiAliasImportRequireUse, false},
-        # Deprecated checks (these will be deleted after a grace period)
+        {Credo.Check.Consistency.MultiAliasImportRequireUse},
+
+        # Additional quality checks widely adopted in open source
+        {Credo.Check.Readability.ImplTrue, false}, # Allow impl true for behaviours
+        {Credo.Check.Readability.SeparateAliasRequire},
+        {Credo.Check.Readability.UnnecessaryAliasExpansion},
+        {Credo.Check.Readability.WithCustomTaggedTuple},
+        {Credo.Check.Refactor.IoPuts},
+        {Credo.Check.Warning.LeakyEnvironment},
+        {Credo.Check.Warning.UnsafeToAtom, false}, # Too strict for libraries that handle dynamic atoms safely
+
+        # Keep controversial checks disabled
+        {Credo.Check.Refactor.ABCSize, false}, # Function complexity - too restrictive
+        {Credo.Check.Refactor.VariableRebinding, false}, # Common pattern in Elixir
+
+        # Ensure proper documentation
         {Credo.Check.Readability.Specs},
         {Credo.Check.Readability.ModuleDoc, false}
       ]
