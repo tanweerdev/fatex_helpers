@@ -47,14 +47,29 @@ defmodule Fatex.ChangesetHelperTest do
       assert result.errors[:email] == {"Use either email or phone", []}
     end
 
-    test "handles nil values according to options", %{schema: schema} do
-      # With allow_nil: false (default)
-      changeset = cast(schema, %{email: nil}, [:email, :phone])
-      result = Helper.validate_exclusive_fields(changeset, [:email, :phone])
-      refute result.valid?
+    test "handles treat_values_absent option" do
+      # Test treat_values_absent - empty strings treated as absent
+      changeset = cast(%Fatex.FatDoctor{}, %{email: "test@example.com", phone: ""}, [:email, :phone])
+      result = Helper.validate_exclusive_fields(changeset, [:email, :phone], treat_values_absent: [""])
+      # Should pass because phone is treated as absent
+      assert result.valid?
 
-      # With allow_nil: true
-      result = Helper.validate_exclusive_fields(changeset, [:email, :phone], allow_nil: true)
+      # Test treat_values_absent with "0" string
+      changeset2 = cast(%Fatex.FatDoctor{}, %{email: "valid@email.com", phone: "0"}, [:email, :phone])
+      result = Helper.validate_exclusive_fields(changeset2, [:email, :phone], treat_values_absent: ["0"])
+      # Should pass because only email is present, phone ("0") is absent
+      assert result.valid?
+
+      # Test both options together with different values
+      changeset3 = cast(%Fatex.FatDoctor{}, %{email: "PRESENT", phone: "0"}, [:email, :phone])
+
+      result =
+        Helper.validate_exclusive_fields(changeset3, [:email, :phone],
+          treat_values_present: ["PRESENT"],
+          treat_values_absent: ["0"]
+        )
+
+      # Should pass because email ("PRESENT") is treated as present, phone ("0") is absent
       assert result.valid?
     end
   end
@@ -82,16 +97,29 @@ defmodule Fatex.ChangesetHelperTest do
       assert result.errors[:email] == {"Exactly one of email, phone is required", []}
     end
 
-    test "handles nil values according to options" do
-      schema = %Fatex.FatDoctor{email: nil, phone: nil}
+    test "handles treat_values_absent option" do
+      # Test treat_values_absent with empty strings
+      changeset = cast(%Fatex.FatDoctor{}, %{email: "test@example.com", phone: ""}, [:email, :phone])
+      result = Helper.validate_exactly_one_field(changeset, [:email, :phone], treat_values_absent: [""])
+      # Should pass because only email is present (phone treated as absent)
+      assert result.valid?
 
-      # With allow_nil: false (default)
-      changeset = cast(schema, %{}, [:email, :phone])
-      result = Helper.validate_exactly_one_field(changeset, [:email, :phone])
-      refute result.valid?
+      # Test treat_values_absent with "0" string
+      changeset2 = cast(%Fatex.FatDoctor{}, %{email: "valid@email.com", phone: "0"}, [:email, :phone])
+      result = Helper.validate_exactly_one_field(changeset2, [:email, :phone], treat_values_absent: ["0"])
+      # Should pass because only email is present, phone ("0") is absent
+      assert result.valid?
 
-      # With allow_nil: true
-      result = Helper.validate_exactly_one_field(changeset, [:email, :phone], allow_nil: true)
+      # Test both options together with different values
+      changeset3 = cast(%Fatex.FatDoctor{}, %{email: "PRESENT", phone: "0"}, [:email, :phone])
+
+      result =
+        Helper.validate_exactly_one_field(changeset3, [:email, :phone],
+          treat_values_present: ["PRESENT"],
+          treat_values_absent: ["0"]
+        )
+
+      # Should pass because email ("PRESENT") is treated as present, phone ("0") is absent
       assert result.valid?
     end
   end
@@ -164,24 +192,24 @@ defmodule Fatex.ChangesetHelperTest do
         cast(
           schema,
           %{
-            start_time: ~U[2020-01-01 10:00:00Z],
-            end_time: ~U[2020-01-01 11:00:00Z]
+            start_date: ~U[2020-01-01 10:00:00Z],
+            end_date: ~U[2020-01-01 11:00:00Z]
           },
-          [:start_time, :end_time]
+          [:start_date, :end_date]
         )
 
       invalid_changeset =
         cast(
           schema,
           %{
-            start_time: ~U[2020-01-01 12:00:00Z],
-            end_time: ~U[2020-01-01 11:00:00Z]
+            start_date: ~U[2020-01-01 12:00:00Z],
+            end_date: ~U[2020-01-01 11:00:00Z]
           },
-          [:start_time, :end_time]
+          [:start_date, :end_date]
         )
 
-      assert Helper.validate_start_before_end(valid_changeset, :start_time, :end_time).valid?
-      refute Helper.validate_start_before_end(invalid_changeset, :start_time, :end_time).valid?
+      assert Helper.validate_start_before_end(valid_changeset, :start_date, :end_date).valid?
+      refute Helper.validate_start_before_end(invalid_changeset, :start_date, :end_date).valid?
     end
 
     test "validates start before or equal to end" do
@@ -191,13 +219,13 @@ defmodule Fatex.ChangesetHelperTest do
         cast(
           schema,
           %{
-            start_time: ~U[2020-01-01 10:00:00Z],
-            end_time: ~U[2020-01-01 10:00:00Z]
+            start_date: ~U[2020-01-01 10:00:00Z],
+            end_date: ~U[2020-01-01 10:00:00Z]
           },
-          [:start_time, :end_time]
+          [:start_date, :end_date]
         )
 
-      assert Helper.validate_start_before_or_equal_end(equal_changeset, :start_time, :end_time).valid?
+      assert Helper.validate_start_before_or_equal_end(equal_changeset, :start_date, :end_date).valid?
     end
 
     test "accepts custom error message" do
@@ -207,18 +235,18 @@ defmodule Fatex.ChangesetHelperTest do
         cast(
           schema,
           %{
-            start_time: ~U[2020-01-01 12:00:00Z],
-            end_time: ~U[2020-01-01 11:00:00Z]
+            start_date: ~U[2020-01-01 12:00:00Z],
+            end_date: ~U[2020-01-01 11:00:00Z]
           },
-          [:start_time, :end_time]
+          [:start_date, :end_date]
         )
 
       result =
-        Helper.validate_start_before_end(changeset, :start_time, :end_time,
+        Helper.validate_start_before_end(changeset, :start_date, :end_date,
           message: "must finish after it starts"
         )
 
-      assert result.errors[:start_time] == {"must finish after it starts", []}
+      assert result.errors[:start_date] == {"must finish after it starts", []}
     end
   end
 
@@ -226,7 +254,7 @@ defmodule Fatex.ChangesetHelperTest do
     test "adds custom error to changeset" do
       schema = %Fatex.FatDoctor{}
       changeset = cast(schema, %{}, [])
-      result = Helper.add_echangeset_rror(changeset, :email, "invalid format")
+      result = Helper.add_changeset_error(changeset, :email, "invalid format")
 
       assert result.errors[:email] == {"invalid format", []}
     end

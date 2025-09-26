@@ -1,4 +1,4 @@
-# FatExUtils: Supercharge Your Ecto Queries with Ease! 🚀
+# FatExUtils
 
 [![Build Status](https://github.com/tanweerdev/fatex_helpers/actions/workflows/fatex_helpers.yml/badge.svg)](https://github.com/tanweerdev/fatex_helpers/actions)
 [![Coverage Status](https://coveralls.io/repos/github/tanweerdev/fatex_helpers/badge.svg)](https://coveralls.io/github/tanweerdev/fatex_helpers)
@@ -7,11 +7,7 @@
 [![hex.pm license](https://img.shields.io/hexpm/l/fatex_helpers.svg)](https://github.com/tanweerdev/fatex_helpers/blob/master/LICENSE)
 [![Last Updated](https://img.shields.io/github/last-commit/tanweerdev/fatex_helpers.svg)](https://github.com/tanweerdev/fatex_helpers/commits/master)
 
----
-
-## Description
-
-FatExUtils is an Elixir package designed to make your life easier when working with Ecto. It simplifies query building, filtering, sorting, pagination, and data sanitization—so you can focus on what truly matters: building amazing applications. With FatExUtils, writing complex queries becomes effortless, flexible, and powerful! 💪
+A comprehensive utility library for Elixir applications, providing helper functions for working with Ecto changesets, data sanitization, string manipulation, and more.
 
 ---
 
@@ -32,26 +28,32 @@ Then, run `mix deps.get` to install the package.
 
 ---
 
-## Features & Modules
+## Features
 
-### 🔍 Fatex.FatDataSanitizer – Clean & Structured Data
+FatExUtils provides several helper modules for common Elixir/Phoenix development tasks:
 
-Messy data? Not anymore! `DataSanitizer` helps you sanitize records and transform them into structured, clean views effortlessly. Keep your data tidy and consistent. 🎯
+### 🔧 Changeset Validation Helpers
 
-#### Usage of FatDataSanitizer
+Advanced Ecto changeset validation functions with flexible options:
 
 ```elixir
-defmodule Fat.MySanitizer do
-  use Fatex.FatDataSanitizer
-  # Define your custom sanitization functions here
-end
+# Validate exclusive fields (only one can be present)
+changeset
+|> Fatex.ChangesetHelper.validate_exclusive_fields([:email, :phone])
+
+# Treat empty strings as absent
+changeset
+|> Fatex.ChangesetHelper.validate_exclusive_fields([:email, :phone],
+    treat_values_absent: ["", 0])
+
+# Validate exactly one field is present
+changeset
+|> Fatex.ChangesetHelper.validate_exactly_one_field([:card_number, :card_token])
 ```
 
----
+### 🗺️ Map Utilities
 
-### ⚡ FatExUtils Utilities – Small Helpers, Big Impact
-
-FatExUtils also comes with a set of handy utility functions to streamline your workflow:
+Comprehensive map manipulation and validation functions:
 
 ```elixir
 # Check if a map contains all required keys
@@ -59,18 +61,101 @@ Fatex.MapHelper.has_all_keys?(%{a: 1, b: 2}, [:a, :b])
 
 # Ensure a map contains only allowed keys
 Fatex.MapHelper.contain_only_allowed_keys?(%{a: 1, c: 3}, [:a, :b])
+
+# Deep merge maps
+Fatex.MapHelper.deep_merge(%{a: %{b: 1}}, %{a: %{c: 2}})
+# => %{a: %{b: 1, c: 2}}
+```
+
+### 🔤 String Helpers
+
+Generate random strings and tokens:
+
+```elixir
+# Generate random string
+Fatex.StringHelper.random(12)
+
+# Generate from custom character set
+Fatex.StringHelper.random_of(8, ["a", "b", "c"])
+```
+
+### 📅 DateTime Utilities
+
+Work with dates and times:
+
+```elixir
+# Get current timestamp
+Fatex.DateTimeHelper.get_current_time()
+
+# Parse and format dates
+Fatex.DateTimeHelper.parse_date("2023-01-01")
+```
+
+### 🔢 Integer & UUID Helpers
+
+Parse and validate integers and UUIDs:
+
+```elixir
+# Parse integer safely
+Fatex.IntegerHelper.parse_integer("123")
+
+# Generate and validate UUIDs
+Fatex.UuidHelper.generate_uuid()
+Fatex.UuidHelper.is_valid_uuid?(uuid)
+```
+
+### 🔍 Data Sanitization
+
+Clean and structure your data:
+
+```elixir
+defmodule MySanitizer do
+  use Fatex.FatDataSanitizer
+  # Define your custom sanitization functions here
+end
 ```
 
 ---
 
-## 🚀 Contributing
+## Contributing
 
-We love contributions! If you’d like to improve FatExUtils, submit an issue or pull request. Let’s build something amazing together! 🔥
+We welcome contributions! Please:
 
----
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Write tests for your changes
+4. Ensure all tests pass (`mix test`)
+5. Run code quality checks (`mix credo --strict`)
+6. Submit a pull request
 
-## 📜 License
+## Testing
 
-FatExUtils is released under the MIT License.
+Run the test suite:
 
-📖 See the full documentation at [HexDocs](https://hexdocs.pm/fatex_helpers/) for more details.
+```bash
+mix test
+```
+
+Run with coverage:
+
+```bash
+mix test --cover
+```
+
+## Documentation
+
+Generate documentation:
+
+```bash
+mix docs
+```
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## Links
+
+- [Documentation](https://hexdocs.pm/fatex_helpers/)
+- [Hex Package](https://hex.pm/packages/fatex_helpers)
+- [GitHub Repository](https://github.com/tanweerdev/fatex_helpers)

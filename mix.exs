@@ -74,7 +74,7 @@ defmodule Fatex.MixProject do
   defp package() do
     [
       # These are the default files included in the package
-      files: ~w(lib .formatter.exs mix.exs README*),
+      files: ~w(lib .formatter.exs mix.exs README* LICENSE),
       licenses: ["MIT"],
       maintainers: ["Muhammad Tanweer"],
       links: %{

@@ -1,8 +1,9 @@
-defmodule Fatex.BahaviourHelper do
+defmodule Fatex.BehaviourHelper do
   @moduledoc """
-  Provides utility functions for parsing integers from strings.
+  Provides utility functions for checking module behaviours.
 
-  This module handles parsing of integers from strings and ensures consistent return types.
+  This module handles checking if modules implement specific behaviours
+  by inspecting their metadata.
   """
 
   @doc """

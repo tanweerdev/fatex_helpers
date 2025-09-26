@@ -27,6 +27,16 @@ defmodule Fatex.FatContext do
   defmacro __using__(opts) do
     quote location: :keep, bind_quoted: [opts: opts] do
       @repo opts[:repo] || raise(":repo option is required when using Fatex.FatContext")
+
+      @doc """
+      Returns the configured Ecto repository for this context.
+
+      ## Examples
+
+          repo()
+          #=> MyApp.Repo
+      """
+      @spec repo() :: module()
       def repo, do: @repo
 
       # Runtime verification of repo
@@ -308,9 +318,46 @@ defmodule Fatex.FatContext do
       end
 
       @doc """
+      Finds a record by conditions or creates it if not found.
+
+      ## Required Options
+
+      - `:get_by_clauses` - Conditions to find existing record
+      - `:create_params` - Parameters to create new record if not found
+
+      ## Additional Options
+
+      - All Ecto.Repo.insert/2 options
+
+      ## Examples
+
+          find_or_create(User,
+            get_by_clauses: [email: "test@example.com"],
+            create_params: %{name: "New User", email: "test@example.com"}
+          )
+      """
+      @spec find_or_create(module(), keyword()) :: {:ok, struct()} | {:error, Ecto.Changeset.t()}
+      def find_or_create(schema, opts) do
+        get_by_clauses = Keyword.fetch!(opts, :get_by_clauses)
+        create_params = Keyword.fetch!(opts, :create_params)
+        repo_opts = Keyword.drop(opts, [:get_by_clauses, :create_params])
+
+        case get_by(schema, get_by_clauses) do
+          {:ok, record} -> {:ok, record}
+          {:error, :not_found} -> create(schema, create_params, repo_opts)
+        end
+      end
+
+      @doc """
       Creates or updates a record based on conditions.
 
-      ## Options
+      ## Required Options
+
+      - `:get_by_clauses` - Conditions to find existing record
+      - `:update_params` - Parameters to update existing record
+      - `:create_params` - Parameters to create new record
+
+      ## Additional Options
 
       - `:on_conflict` - Conflict resolution strategy
       - `:conflict_target` - Conflict target fields
@@ -318,14 +365,22 @@ defmodule Fatex.FatContext do
 
       ## Examples
 
-          upsert(User, [email: "test@example.com"], %{name: "Updated"}, %{name: "New", email: "test@example.com"})
+          upsert(User,
+            get_by_clauses: [email: "test@example.com"],
+            update_params: %{name: "Updated"},
+            create_params: %{name: "New", email: "test@example.com"}
+          )
       """
-      @spec upsert(module(), keyword() | map(), map(), map(), keyword()) ::
-              {:ok, struct()} | {:error, Ecto.Changeset.t()}
-      def upsert(schema, conditions, update_attrs, create_attrs, opts \\ []) do
-        case get_by(schema, conditions) do
-          {:ok, record} -> update(record, schema, update_attrs, opts)
-          {:error, :not_found} -> create(schema, create_attrs, opts)
+      @spec upsert(module(), keyword()) :: {:ok, struct()} | {:error, Ecto.Changeset.t()}
+      def upsert(schema, opts) do
+        get_by_clauses = Keyword.fetch!(opts, :get_by_clauses)
+        update_params = Keyword.fetch!(opts, :update_params)
+        create_params = Keyword.fetch!(opts, :create_params)
+        repo_opts = Keyword.drop(opts, [:get_by_clauses, :update_params, :create_params])
+
+        case get_by(schema, get_by_clauses) do
+          {:ok, record} -> update(record, schema, update_params, repo_opts)
+          {:error, :not_found} -> create(schema, create_params, repo_opts)
         end
       end
 
@@ -383,7 +438,7 @@ defmodule Fatex.FatContext do
       defp maybe_preload(record, preloads), do: repo().preload(record, preloads)
 
       defp has_field?(query, field) do
-        schema = query.from.source |> elem(1)
+        schema = elem(query.from.source, 1)
         Enum.member?(schema.__schema__(:fields), field)
       end
     end

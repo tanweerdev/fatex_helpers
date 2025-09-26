@@ -17,7 +17,7 @@ defmodule Fatex.NetworkHelper do
   """
   @spec local_address() :: String.t() | nil
   def local_address do
-    case System.cmd("hostname", ["-I"]) do
+    case System.cmd("hostname", ["-I"], env: []) do
       {ip_string, 0} ->
         ip_string
         |> String.trim()

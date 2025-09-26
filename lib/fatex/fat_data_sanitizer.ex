@@ -66,6 +66,7 @@ defmodule Fatex.FatDataSanitizer do
       def sanitize(%_{} = record, opts) do
         record
         |> Map.from_struct()
+        |> Map.drop([:__meta__, :__struct__])
         |> sanitize_record(opts)
       end
 
@@ -88,29 +89,32 @@ defmodule Fatex.FatDataSanitizer do
         |> maybe_deep_sanitize(opts)
       end
 
-      defp prepare_record(%_{} = record), do: Map.from_struct(record)
+      defp prepare_record(%_{} = record) do
+        record
+        |> Map.from_struct()
+        |> Map.drop([:__meta__, :__struct__])
+      end
+
       defp prepare_record(record), do: record
 
       @doc """
       Handles sanitization of tuple records.
       """
       @spec sanitize_tuple(tuple(), keyword()) :: map() | binary()
+      def sanitize_tuple(record, opts) when is_tuple(record) and tuple_size(record) == 2 do
+        {key, value} = record
+        %{key => sanitize(value, opts)}
+      end
+
       def sanitize_tuple(record, opts) when is_tuple(record) do
-        case tuple_size(record) do
-          2 ->
-            {key, value} = record
-            %{key => sanitize(value, opts)}
+        case Application.get_env(:fatex_helpers, :json_library) do
+          nil ->
+            raise "Please configure :json_library in :fatex_helpers application environment"
 
-          _size ->
-            case Application.get_env(:fatex_helpers, :json_library, Jason) do
-              nil ->
-                raise "Please configure :json_library in :fatex_helpers application environment"
-
-              encoder ->
-                record
-                |> Tuple.to_list()
-                |> encoder.encode!(encoder_opts(encoder))
-            end
+          encoder ->
+            record
+            |> Tuple.to_list()
+            |> encoder.encode!(encoder_opts(encoder))
         end
       end
 

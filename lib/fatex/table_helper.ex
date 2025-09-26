@@ -15,10 +15,10 @@ defmodule Fatex.TableHelper do
 
   ## Examples
       iex> Fatex.TableHelper.reset_id_seq_query("users")
-      "SELECT setval('users_id_seq', (SELECT MAX(id) from \"users\"));"
+      "SELECT setval('users_id_seq', (SELECT MAX(id) from \\"users\\"));"
 
       iex> Fatex.TableHelper.reset_id_seq_query("posts", "post_id")
-      "SELECT setval('posts_post_id_seq', (SELECT MAX(post_id) from \"posts\"));"
+      "SELECT setval('posts_post_id_seq', (SELECT MAX(post_id) from \\"posts\\"));"
 
   ## Notes
   - Ensure that the table has no records or that the sequence reset is appropriate for your use case.
