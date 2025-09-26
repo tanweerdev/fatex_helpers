@@ -101,22 +101,20 @@ defmodule Fatex.FatDataSanitizer do
       Handles sanitization of tuple records.
       """
       @spec sanitize_tuple(tuple(), keyword()) :: map() | binary()
+      def sanitize_tuple(record, opts) when is_tuple(record) and tuple_size(record) == 2 do
+        {key, value} = record
+        %{key => sanitize(value, opts)}
+      end
+
       def sanitize_tuple(record, opts) when is_tuple(record) do
-        case tuple_size(record) do
-          2 ->
-            {key, value} = record
-            %{key => sanitize(value, opts)}
+        case Application.get_env(:fatex_helpers, :json_library) do
+          nil ->
+            raise "Please configure :json_library in :fatex_helpers application environment"
 
-          _size ->
-            case Application.get_env(:fatex_helpers, :json_library) do
-              nil ->
-                raise "Please configure :json_library in :fatex_helpers application environment"
-
-              encoder ->
-                record
-                |> Tuple.to_list()
-                |> encoder.encode!(encoder_opts(encoder))
-            end
+          encoder ->
+            record
+            |> Tuple.to_list()
+            |> encoder.encode!(encoder_opts(encoder))
         end
       end
 
